@@ -14,8 +14,9 @@ import LeftOutlined from '@ant-design/icons/LeftOutlined';
 import Input from '../input';
 import { ConfigConsumer, ConfigConsumerProps, RenderEmptyHandler } from '../config-provider';
 import LocaleReceiver from '../locale-provider/LocaleReceiver';
-import warning from '../_util/warning';
+import devWarning from '../_util/devWarning';
 import SizeContext, { SizeType } from '../config-provider/SizeContext';
+import { replaceElement } from '../_util/reactNode';
 
 export interface CascaderOptionType {
   value?: string;
@@ -211,7 +212,7 @@ const defaultDisplayRender = (label: string[]) => label.join(' / ');
 function warningValueNotExist(list: CascaderOptionType[], fieldNames: FieldNamesType = {}) {
   (list || []).forEach(item => {
     const valueFieldName = fieldNames.value || 'value';
-    warning(valueFieldName in item, 'Cascader', 'Not found `value` in `options`.');
+    devWarning(valueFieldName in item, 'Cascader', 'Not found `value` in `options`.');
     warningValueNotExist(item[fieldNames.children || 'children'], fieldNames);
   });
 }
@@ -283,7 +284,7 @@ class Cascader extends React.Component<CascaderProps, CascaderState> {
       (o: CascaderOptionType, level: number) => o[names.value] === unwrappedValue[level],
       { childrenKeyName: names.children },
     );
-    const label = selectedOptions.map(o => o[names.label]);
+    const label = selectedOptions.length ? selectedOptions.map(o => o[names.label]) : value;
     return displayRender(label, selectedOptions);
   }
 
@@ -384,7 +385,7 @@ class Cascader extends React.Component<CascaderProps, CascaderState> {
         return matchCount >= limit;
       });
     } else {
-      warning(
+      devWarning(
         typeof limit !== 'number',
         'Cascader',
         "'limit' of showSearch should be positive number or false.",
@@ -522,8 +523,10 @@ class Cascader extends React.Component<CascaderProps, CascaderState> {
         const names: FilledFieldNamesType = getFilledFieldNames(this.props);
         if (options && options.length > 0) {
           if (state.inputValue) {
-             const filteredOptions = this.generateFilteredOptions(prefixCls, renderEmpty);
-             options = isEqual(filteredOptions, this.cachedOptions) ? this.cachedOptions : filteredOptions;
+            const filteredOptions = this.generateFilteredOptions(prefixCls, renderEmpty);
+            options = isEqual(filteredOptions, this.cachedOptions)
+              ? this.cachedOptions
+              : filteredOptions;
           }
         } else {
           options = [
@@ -552,17 +555,21 @@ class Cascader extends React.Component<CascaderProps, CascaderState> {
           dropdownMenuColumnStyle.width = this.input.input.offsetWidth;
         }
 
-        const inputIcon = (suffixIcon &&
-          (React.isValidElement<{ className?: string }>(suffixIcon) ? (
-            React.cloneElement(suffixIcon, {
+        let inputIcon: React.ReactNode;
+        if (suffixIcon) {
+          inputIcon = replaceElement(
+            suffixIcon,
+            <span className={`${prefixCls}-picker-arrow`}>{suffixIcon}</span>,
+            () => ({
               className: classNames({
-                [suffixIcon.props.className!]: suffixIcon.props.className,
+                [(suffixIcon as any).props.className!]: (suffixIcon as any).props.className,
                 [`${prefixCls}-picker-arrow`]: true,
               }),
-            })
-          ) : (
-            <span className={`${prefixCls}-picker-arrow`}>{suffixIcon}</span>
-          ))) || <DownOutlined className={arrowCls} />;
+            }),
+          );
+        } else {
+          inputIcon = <DownOutlined className={arrowCls} />;
+        }
 
         const input = children || (
           <span style={style} className={pickerCls}>
