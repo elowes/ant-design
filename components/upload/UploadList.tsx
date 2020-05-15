@@ -9,16 +9,14 @@ import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
 import DownloadOutlined from '@ant-design/icons/DownloadOutlined';
 
+import { red } from '@ant-design/colors';
+
 import { UploadListProps, UploadFile, UploadListType } from './interface';
 import { previewImage, isImageUrl } from './utils';
 import Tooltip from '../tooltip';
 import Progress from '../progress';
 import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
 import { cloneElement, isValidElement } from '../_util/reactNode';
-
-import { red } from '@ant-design/colors';
-
-import { red } from '@ant-design/colors';
 
 export default class UploadList extends React.Component<UploadListProps, any> {
   static defaultProps = {
