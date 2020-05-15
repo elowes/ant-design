@@ -14,6 +14,9 @@ import { previewImage, isImageUrl } from './utils';
 import Tooltip from '../tooltip';
 import Progress from '../progress';
 import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
+import { cloneElement, isValidElement } from '../_util/reactNode';
+
+import { red } from '@ant-design/colors';
 
 import { red } from '@ant-design/colors';
 
@@ -101,8 +104,8 @@ export default class UploadList extends React.Component<UploadListProps, any> {
   };
 
   handleActionIconRender = (customIcon: React.ReactNode, callback: () => void, title?: string) => {
-    if (React.isValidElement(customIcon)) {
-      return React.cloneElement(customIcon, {
+    if (isValidElement(customIcon)) {
+      return cloneElement(customIcon, {
         ...customIcon.props,
         title,
         onClick: (e: React.MouseEvent<HTMLElement>) => {
